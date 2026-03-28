@@ -70,9 +70,9 @@ Add to your project-level `.vscode/mcp.json`:
 }
 ```
 
-### Claude Desktop
+### Claude Code
 
-Add to your project-level `.claude/mcp.json`:
+Add to your project-level `.mcp.json`:
 
 ```json
 {
@@ -91,16 +91,18 @@ Add to your project-level `.claude/mcp.json`:
 
 ### OpenCode
 
-Add to your project-level `.opencode/mcp.json`:
+Add to your project-level `opencode.json`:
 
 ```json
 {
-  "my-server": {
-    "command": "npx",
-    "args": ["-y", "mcp-entra-auth-proxy@latest"],
-    "env": {
-      "MCP_ENTRA_SERVER_URL": "https://your-server.example.com/mcp/",
-      "MCP_ENTRA_RESOURCE": "api://your-azure-app-client-id"
+  "mcp": {
+    "my-server": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-entra-auth-proxy@latest"],
+      "environment": {
+        "MCP_ENTRA_SERVER_URL": "https://your-server.example.com/mcp/",
+        "MCP_ENTRA_RESOURCE": "api://your-azure-app-client-id"
+      }
     }
   }
 }
