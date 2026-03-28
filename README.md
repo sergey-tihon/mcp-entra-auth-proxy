@@ -8,17 +8,17 @@
 
 Local stdio MCP proxy that forwards requests to a remote MCP server, authenticating via Microsoft Entra ID tokens from the `az` CLI.
 
-Use it to connect any MCP-compatible AI client (VS Code Copilot, Claude Desktop, OpenCode, Cursor, etc.) to a remote Microsoft Entra ID-protected MCP server — without embedding credentials in the client config.
+Use it to connect any MCP-compatible AI client (VS Code Copilot, Claude Code, OpenCode, Cursor, etc.) to a remote Microsoft Entra ID-protected MCP server — without embedding credentials in the client config.
 
 ## How it works
 
 ```
-┌─────────────┐  stdio   ┌──────────────────────┐  HTTP(S)  ┌──────────────┐
-│  AI Client   │◄────────►│ mcp-entra-auth-proxy │◄─────────►│ Remote MCP   │
-│ (VS Code,    │          │       (local)        │ + Bearer  │ Server       │
-│  Claude, …)  │          │                      │   token   │ (Entra ID    │
-└─────────────┘          └──────────────────────┘           │  protected)  │
-                                                             └──────────────┘
++--------------+          +----------------------+          +--------------+
+|  AI Client   |  stdio   | mcp-entra-auth-proxy | HTTP(S)  | Remote MCP   |
+| (VS Code,    |<-------->|       (local)        |<-------->| Server       |
+|  Claude, ..) |          |                      | + Bearer | (Entra ID    |
+|              |          |                      |   token  |  protected)  |
++--------------+          +----------------------+          +--------------+
 ```
 
 1. Your AI client spawns `mcp-entra-auth-proxy` as a local stdio MCP server
