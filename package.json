@@ -5,7 +5,7 @@
   "type": "module",
   "main": "proxy.mjs",
   "bin": {
-    "mcp-entra-auth-proxy": "./proxy.mjs"
+    "mcp-entra-auth-proxy": "proxy.mjs"
   },
   "keywords": [
     "mcp",
@@ -21,7 +21,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sergey-tihon/mcp-entra-auth-proxy.git"
+    "url": "git+https://github.com/sergey-tihon/mcp-entra-auth-proxy.git"
   },
   "files": [
     "proxy.mjs",
