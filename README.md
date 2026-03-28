@@ -1,5 +1,9 @@
 # mcp-entra-auth-proxy
 
+[![npm version](https://img.shields.io/npm/v/mcp-entra-auth-proxy)](https://www.npmjs.com/package/mcp-entra-auth-proxy)
+[![npm downloads](https://img.shields.io/npm/dm/mcp-entra-auth-proxy)](https://www.npmjs.com/package/mcp-entra-auth-proxy)
+[![License: MIT](https://img.shields.io/npm/l/mcp-entra-auth-proxy)](./LICENSE)
+
 > **Workaround solution.** This proxy exists because most MCP clients do not yet natively support Microsoft Entra ID authentication. If your MCP client supports Entra ID auth natively, prefer using its built-in authentication flow instead of this proxy.
 
 Local stdio MCP proxy that forwards requests to a remote MCP server, authenticating via Microsoft Entra ID tokens from the `az` CLI.
