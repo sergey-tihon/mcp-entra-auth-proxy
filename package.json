@@ -1,0 +1,37 @@
+{
+  "name": "mcp-entra-auth-proxy",
+  "version": "0.1.0",
+  "description": "Local stdio MCP proxy that forwards requests to a remote MCP server, authenticating via Microsoft Entra ID tokens from the az CLI.",
+  "type": "module",
+  "main": "proxy.mjs",
+  "bin": {
+    "mcp-entra-auth-proxy": "./proxy.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "azure",
+    "entra",
+    "entra-id",
+    "proxy",
+    "stdio",
+    "ai",
+    "llm"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sergey-tihon/mcp-entra-auth-proxy.git"
+  },
+  "files": [
+    "proxy.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  }
+}
