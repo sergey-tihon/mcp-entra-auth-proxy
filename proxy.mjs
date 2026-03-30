@@ -23,7 +23,7 @@
  *   MCP_ENTRA_HEADERS       — (optional) Extra headers as JSON, e.g. '{"X-Custom":"val"}'
  */
 
-import { execSync } from "node:child_process";
+import { execSync, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -108,6 +108,129 @@ function log(msg) {
   process.stderr.write(`[mcp-entra-auth-proxy] ${msg}\n`);
 }
 
+function checkAzInstalled() {
+  try {
+    execSync("az --version", {
+      encoding: "utf-8",
+      timeout: 10_000,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function checkAzLoggedIn() {
+  try {
+    execSync("az account show", {
+      encoding: "utf-8",
+      timeout: 15_000,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function runAzLogin() {
+  return new Promise((resolve, reject) => {
+    const args = ["login"];
+    if (AZURE_TENANT) args.push("--tenant", AZURE_TENANT);
+
+    log("Not logged in to Azure CLI. Starting login...");
+
+    const child = spawn("az", args, {
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    // Pipe az output to stderr so user sees the browser prompt
+    child.stdout.on("data", (data) => process.stderr.write(data));
+    child.stderr.on("data", (data) => process.stderr.write(data));
+
+    const timer = setTimeout(() => {
+      child.kill();
+      reject(new Error("az login timed out after 5 minutes"));
+    }, 5 * 60 * 1000);
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (code === 0) {
+        log("Azure login completed successfully.");
+        resolve();
+      } else {
+        reject(new Error(`az login exited with code ${code}`));
+      }
+    });
+
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
+}
+
+async function ensureAuthenticated() {
+  // Static token from env — no az needed
+  if (process.env.MCP_ENTRA_TOKEN) {
+    cachedToken = acquireTokenFromEnv();
+    if (cachedToken) return;
+  }
+
+  // Check az is installed
+  if (!checkAzInstalled()) {
+    log(
+      "Error: Azure CLI ('az') is not installed or not found in PATH.\n" +
+        "[mcp-entra-auth-proxy] Install it from: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
+    );
+    process.exit(1);
+  }
+
+  // Try silent token acquisition first
+  cachedToken = acquireTokenViaAz();
+  if (cachedToken) {
+    const expiresInMin = Math.round(
+      (cachedToken.expiresOn.getTime() - Date.now()) / 60_000
+    );
+    log(`Token acquired, expires in ~${expiresInMin} min`);
+    return;
+  }
+
+  // Token acquisition failed — check if we're logged in
+  if (checkAzLoggedIn()) {
+    // Logged in but token for this resource failed
+    log(
+      `Error: Logged in to Azure CLI but cannot acquire token for resource: ${AZURE_RESOURCE}\n` +
+        "[mcp-entra-auth-proxy] Check that the resource URI is correct and the Azure CLI is an authorized client."
+    );
+    process.exit(1);
+  }
+
+  // Not logged in — start interactive login
+  try {
+    await runAzLogin();
+  } catch (err) {
+    log(`Error: Azure login failed: ${err.message}`);
+    process.exit(1);
+  }
+
+  // Retry token acquisition after login
+  cachedToken = acquireTokenViaAz();
+  if (!cachedToken) {
+    log(
+      `Error: Login succeeded but cannot acquire token for resource: ${AZURE_RESOURCE}\n` +
+        "[mcp-entra-auth-proxy] Check that the resource URI is correct and the Azure CLI is an authorized client."
+    );
+    process.exit(1);
+  }
+
+  const expiresInMin = Math.round(
+    (cachedToken.expiresOn.getTime() - Date.now()) / 60_000
+  );
+  log(`Token acquired, expires in ~${expiresInMin} min`);
+}
+
 function acquireTokenViaAz() {
   if (!AZURE_RESOURCE) return null;
   try {
@@ -189,7 +312,7 @@ async function ensureRemoteClient() {
 
   const client = new Client({
     name: "mcp-entra-auth-proxy",
-    version: "0.1.0",
+    version: "0.2.0",
   });
 
   const headers = {
@@ -222,11 +345,11 @@ async function ensureRemoteClient() {
 
 // --- Local Server Setup ---
 
-// Acquire token eagerly so we fail fast if az is not logged in
-getToken();
+// Ensure we have a valid token before starting the server
+await ensureAuthenticated();
 
 const server = new Server(
-  { name: "mcp-entra-auth-proxy", version: "0.1.0" },
+  { name: "mcp-entra-auth-proxy", version: "0.2.0" },
   {
     capabilities: {
       tools: {},

@@ -1,6 +1,6 @@
 {
   "name": "mcp-entra-auth-proxy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Local stdio MCP proxy that forwards requests to a remote MCP server, authenticating via Microsoft Entra ID tokens from the az CLI.",
   "type": "module",
   "main": "proxy.mjs",
