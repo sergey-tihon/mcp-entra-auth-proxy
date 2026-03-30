@@ -180,9 +180,9 @@ async function ensureAuthenticated() {
 
   // Check az is installed
   if (!checkAzInstalled()) {
+    log("Error: Azure CLI ('az') is not installed or not found in PATH.");
     log(
-      "Error: Azure CLI ('az') is not installed or not found in PATH.\n" +
-        "[mcp-entra-auth-proxy] Install it from: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
+      "Install it from: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli"
     );
     process.exit(1);
   }
@@ -201,8 +201,10 @@ async function ensureAuthenticated() {
   if (checkAzLoggedIn()) {
     // Logged in but token for this resource failed
     log(
-      `Error: Logged in to Azure CLI but cannot acquire token for resource: ${AZURE_RESOURCE}\n` +
-        "[mcp-entra-auth-proxy] Check that the resource URI is correct and the Azure CLI is an authorized client."
+      `Error: Logged in to Azure CLI but cannot acquire token for resource: ${AZURE_RESOURCE}`
+    );
+    log(
+      "Check that the resource URI is correct and the Azure CLI is an authorized client."
     );
     process.exit(1);
   }
@@ -219,8 +221,10 @@ async function ensureAuthenticated() {
   cachedToken = acquireTokenViaAz();
   if (!cachedToken) {
     log(
-      `Error: Login succeeded but cannot acquire token for resource: ${AZURE_RESOURCE}\n` +
-        "[mcp-entra-auth-proxy] Check that the resource URI is correct and the Azure CLI is an authorized client."
+      `Error: Login succeeded but cannot acquire token for resource: ${AZURE_RESOURCE}`
+    );
+    log(
+      "Check that the resource URI is correct and the Azure CLI is an authorized client."
     );
     process.exit(1);
   }

@@ -31,7 +31,7 @@ Use it to connect any MCP-compatible AI client (VS Code Copilot, Claude Code, Op
 - [Node.js](https://nodejs.org/) >= 18
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) (`az`) installed
 
-> **Note:** You do not need to run `az login` manually. The proxy automatically detects if you are not logged in and opens a browser-based login flow on first use.
+> **Note:** You do not need to run `az login` manually. The proxy automatically detects if you are not logged in and opens a browser-based login flow on startup.
 
 ### Azure CLI pre-approval requirement
 
@@ -181,7 +181,7 @@ Diagnostic messages are written to stderr (visible in your client's MCP output p
 
 | Message | Cause | Fix |
 |---|---|---|
-| `Azure CLI ('az') is not installed` | `az` CLI not found in PATH | [Install the Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) |
+| `Azure CLI ('az') is not installed or not found in PATH` | `az` CLI not found in PATH | [Install the Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) |
 | `MCP_ENTRA_SERVER_URL environment variable is required` | Missing server URL | Set `MCP_ENTRA_SERVER_URL` in your env config |
 | `MCP_ENTRA_RESOURCE or MCP_ENTRA_TOKEN environment variable is required` | No auth configured | Set either `MCP_ENTRA_RESOURCE` or `MCP_ENTRA_TOKEN` |
 | `Logged in to Azure CLI but cannot acquire token for resource` | Wrong resource URI or CLI not authorized | Verify the `MCP_ENTRA_RESOURCE` URI and ensure the Azure CLI is an authorized client |
