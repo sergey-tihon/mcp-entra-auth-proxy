@@ -22,18 +22,16 @@ Use it to connect any MCP-compatible AI client (VS Code Copilot, Claude Code, Op
 ```
 
 1. Your AI client spawns `mcp-entra-auth-proxy` as a local stdio MCP server
-2. The proxy acquires a Microsoft Entra ID token via `az account get-access-token`
+2. The proxy acquires a Microsoft Entra ID token via `az account get-access-token` (if not logged in, it automatically runs `az login` and opens a browser)
 3. All MCP requests (tools, resources, prompts) are forwarded to the remote server with the Bearer token
 4. Tokens are refreshed proactively before they expire
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 18
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) (`az`) installed and logged in
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) (`az`) installed
 
-```bash
-az login
-```
+> **Note:** You do not need to run `az login` manually. The proxy automatically detects if you are not logged in and opens a browser-based login flow on startup.
 
 ### Azure CLI pre-approval requirement
 
@@ -130,11 +128,7 @@ All configuration is done through environment variables:
 
 The proxy calls `az account get-access-token --resource <MCP_ENTRA_RESOURCE>` to acquire tokens. Tokens are cached and refreshed automatically before they expire.
 
-Make sure you are logged in:
-
-```bash
-az login
-```
+If you are not logged in, the proxy will automatically start `az login` and open a browser for you to authenticate. Once login completes, the proxy acquires the token and starts normally.
 
 If your server requires a specific tenant:
 
@@ -187,10 +181,12 @@ Diagnostic messages are written to stderr (visible in your client's MCP output p
 
 | Message | Cause | Fix |
 |---|---|---|
+| `Azure CLI ('az') is not installed or not found in PATH` | `az` CLI not found in PATH | [Install the Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) |
 | `MCP_ENTRA_SERVER_URL environment variable is required` | Missing server URL | Set `MCP_ENTRA_SERVER_URL` in your env config |
 | `MCP_ENTRA_RESOURCE or MCP_ENTRA_TOKEN environment variable is required` | No auth configured | Set either `MCP_ENTRA_RESOURCE` or `MCP_ENTRA_TOKEN` |
-| `az token acquisition failed` | `az` CLI error | Run `az login` and ensure the resource URI is correct |
-| `Cannot acquire token` | Both `az` and env token failed | Run `az login` or set `MCP_ENTRA_TOKEN` |
+| `Logged in to Azure CLI but cannot acquire token for resource` | Wrong resource URI or CLI not authorized | Verify the `MCP_ENTRA_RESOURCE` URI and ensure the Azure CLI is an authorized client |
+| `Azure login failed` | Login timed out or was cancelled | Restart the proxy to try again |
+| `az token acquisition failed` | `az` CLI error during token refresh | Check that the resource URI is correct and your session is still valid |
 
 ## License
 
