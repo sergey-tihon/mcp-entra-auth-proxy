@@ -316,7 +316,7 @@ async function ensureRemoteClient() {
 
   const client = new Client({
     name: "mcp-entra-auth-proxy",
-    version: "0.2.0",
+    version: "0.3.0",
   });
 
   const headers = {
@@ -353,7 +353,7 @@ async function ensureRemoteClient() {
 await ensureAuthenticated();
 
 const server = new Server(
-  { name: "mcp-entra-auth-proxy", version: "0.2.0" },
+  { name: "mcp-entra-auth-proxy", version: "0.3.0" },
   {
     capabilities: {
       tools: {},
@@ -407,6 +407,26 @@ server.setRequestHandler(ListPromptsRequestSchema, async (request) => {
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
   const client = await ensureRemoteClient();
   return await client.getPrompt(request.params);
+});
+
+// --- Graceful shutdown on stdin EOF ---
+//
+// Per the MCP stdio transport spec, the client signals shutdown by closing
+// the server's stdin.  We listen for that event and clean up the remote
+// connection before exiting so the Node.js process does not linger waiting
+// for open HTTP/SSE handles to time out (which would delay the host client's
+// own shutdown by up to the SDK's default 60-second request timeout).
+
+process.stdin.on("close", async () => {
+  log("stdin closed — shutting down gracefully");
+  if (remoteClient) {
+    try {
+      await remoteClient.close();
+    } catch {
+      // ignore errors during shutdown
+    }
+  }
+  process.exit(0);
 });
 
 // --- Start stdio transport ---
